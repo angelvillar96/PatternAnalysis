@@ -1,0 +1,8 @@
+# removing temporal folders and git stuff
+.git
+.gitkeep
+.ipynb_checkpoints
+__pycache__
+
+# data folder is too heavy
+data/
