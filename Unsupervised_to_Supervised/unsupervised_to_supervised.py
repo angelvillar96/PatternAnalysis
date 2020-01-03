@@ -8,6 +8,9 @@ import time
 
 
 def measure(func):
+    """
+    Method to measure the duration of the program
+    """
     def wrapper(*args, **kwargs):
         print("call: ", func.__name__)
         t = time.time()
@@ -17,10 +20,13 @@ def measure(func):
     return wrapper
 
 
-class Exercise2():
+class Unsupervised_to_Supervised():
 
 
     def __init__(self, sigma=50):
+        """
+        Initializer of the object
+        """
 
         self.sigma = sigma
         self.original_image = misc.face(gray=True)
@@ -31,11 +37,10 @@ class Exercise2():
         self.model = None
 
 
-
-    ###############################
-    # method that draws a given number of samples
-    ###############################
-    def getSamples( self, numberOfSamples=1e5 ):
+    def getSamples(self, numberOfSamples=1e5):
+        """
+        Method that draws a given number of samples
+        """
 
         #drawing n random numbers between 0 and 1
         randomVector = np.random.random(int(numberOfSamples))
@@ -58,12 +63,10 @@ class Exercise2():
         return sampledPDF, Indexes2D
 
 
-
-    ################################################
-    # Method that obtains samples for the background
-    ###############################################3
-    def getBackgroundSamples( self, numberOfSamples=1e5 ):
-
+    def getBackgroundSamples(self, numberOfSamples=1e5):
+        """
+        Drawing samples for the background
+        """
         randomRow = np.random.randint( low=0, high=self.blurred_image.shape[0], size=numberOfSamples)
         randomCol = np.random.randint( low=0, high=self.blurred_image.shape[1], size=numberOfSamples)
 
@@ -77,11 +80,27 @@ class Exercise2():
         return sampledDensity, Indexes2D
 
 
+    def displayDensities(self):
+        """
+        Displaying original, auxiliary and overlapping densities
+        """
 
-    ################################################
-    # Method that trains the random forest
-    ###############################################3
+        plt.figure(figsize=(12,6))
+        plt.subplot(1,3,1)
+        plt.imshow(self.racoon, cmap="gray")
+        plt.title("Original Density")
+        plt.subplot(1,3,2)
+        plt.imshow(self.background, cmap="gray")
+        plt.title("Auxiliary Density")
+        plt.subplot(1,3,3)
+        plt.imshow(100*self.background+self.racoon, cmap="gray")
+        plt.title("Combined Densities")
+
+
     def RandomForestRegressorTrain( self, n_trees=8, max_depth=None, mode="RandomForest" ):
+        """
+        Training the Random forest Regressor on the labelled background vs racoon
+        """
 
         #merging background with racoon
         labels = self.racoon + self.background
@@ -99,11 +118,10 @@ class Exercise2():
         self.model.fit(features, labels);
 
 
-
-    ################################################
-    # Method that predicts using the trained model
-    ###############################################3
     def RandomForestRegressorTest( self ):
+        """
+        Using the random forest regressor to infere predictions
+        """
 
         #reshaping the image
         size = self.blurred_image.shape[0]*self.blurred_image.shape[1]
@@ -126,12 +144,10 @@ class Exercise2():
         return reconstruction
 
 
-
-
-    ################################################
-    # Method that compares ExtraTrees with RandomForests
-    ###############################################3
     def compareMethods(self):
+        """
+        Comparing the performance of scikit ExtraTrees with the regular RandomForests
+        """
 
         n_trees = [8, 20, 50]
         depth_trees = [8, 12, 20]
@@ -174,7 +190,7 @@ class Exercise2():
 
 
 
-def convertFeatures2D( racoonSamples, BackgroundSamples ):
+def convertFeatures2D(racoonSamples, BackgroundSamples):
 
     xrac = np.where(racoonSamples>0.1)
     yrac = np.array(racoonSamples[xrac])
@@ -186,8 +202,6 @@ def convertFeatures2D( racoonSamples, BackgroundSamples ):
     X = np.concatenate((xrac, xbg))
     y = np.concatenate((yrac, ybg))
     return X, y
-
-
 
 
 
@@ -217,25 +231,25 @@ def test1():
     n_trees = 50
     max_depth = 10
 
-    exercise2 = Exercise2( sigma=sigma )
+    converter = Unsupervised_to_Supervised( sigma=sigma )
 
     #obtaining and displaying samples from the racoon
-    racoonSamples,_ = exercise2.getSamples( numberOfSamples )
+    racoonSamples,_ = converter.getSamples( numberOfSamples )
     plt.figure()
     plt.imshow( racoonSamples, cmap="gray" )
     plt.title("Sample from the racoon")
 
 
     #obtaining and displaying samples from the background
-    BackgroundSamples, _ = exercise2.getBackgroundSamples( numberOfSamples )
+    BackgroundSamples, _ = converter.getBackgroundSamples( numberOfSamples )
     plt.figure()
     plt.imshow( BackgroundSamples, cmap="gray" )
     plt.title("Sample from the background")
 
 
     # applying the random forest to compuite the regression problem
-    exercise2.RandomForestRegressorTrain( n_trees=n_trees, max_depth=max_depth, mode="ExtraTrees" )
-    predictions = exercise2.RandomForestRegressorTest()
+    converter.RandomForestRegressorTrain( n_trees=n_trees, max_depth=max_depth, mode="ExtraTrees" )
+    predictions = converter.RandomForestRegressorTest()
     plt.figure()
     plt.imshow( predictions, cmap="gray" )
     plt.title("Predictions")
@@ -244,7 +258,6 @@ def test1():
     X, y = convertFeatures2D(racoonSamples, BackgroundSamples)
 
     # applying the random forest for 2D
-    #forest = ensemble.RandomForestRegressor(n_estimators=40, max_depth=20)
     forest = ensemble.ExtraTreesRegressor(n_estimators=n_trees, max_depth=max_depth)
     forest.fit = measure(forest.fit)
     forest.predict = measure(forest.predict)
@@ -252,8 +265,7 @@ def test1():
     forest.fit(X, y)
     reconstructed = predict2D( forest, *racoonSamples.shape )
 
-    #reconstructed = reconstructed - np.min(reconstructed)
-    #reconstructed = reconstructed/np.max(reconstructed)
+
     plt.figure()
     plt.subplot(1,3,1)
     plt.imshow( reconstructed, cmap="gray" )
@@ -271,7 +283,7 @@ def test1():
     # subset of the features
     # - ExtraTress also takes random features, but instead of searching the optimum threshold,
     # it gets the best from a randomly selected subset of points for the features (as we have seen in the lecture)
-    exercise2.compareMethods()
+    converter.compareMethods()
 
 
     plt.tight_layout()
@@ -300,17 +312,17 @@ def test2():
 
                 print("#samples: {}, #trees: {}, max_depth: {}".format(n_samples, n_tr, d))
 
-                exercise2 = Exercise2( sigma=sigma )
+                converter = Unsupervised_to_Supervised( sigma=sigma )
 
                 #obtaining and displaying samples from the racoon
-                racoonSamples,_ = exercise2.getSamples( n_samples )
+                racoonSamples,_ = converter.getSamples( n_samples )
 
                 #obtaining and displaying samples from the background
-                BackgroundSamples, _ = exercise2.getBackgroundSamples( n_samples )
+                BackgroundSamples, _ = converter.getBackgroundSamples( n_samples )
 
                 # applying the random forest to compuite the regression problem
-                exercise2.RandomForestRegressorTrain( n_trees=n_tr, max_depth=d, mode="ExtraTrees" )
-                prediction1D = exercise2.RandomForestRegressorTest()
+                converter.RandomForestRegressorTrain( n_trees=n_tr, max_depth=d, mode="ExtraTrees" )
+                prediction1D = converter.RandomForestRegressorTest()
 
                 # setup variables for 2D Regression Forest
                 X, y = convertFeatures2D(racoonSamples, BackgroundSamples)
@@ -355,12 +367,13 @@ def test2():
 
 
 
-
-
-
 ##########################################
 # Main code
 ##########################################
 if __name__=="__main__":
 
+    # this trains random forest with few parameters and compares with extra trees
     test1()
+
+    # this method generates figures using different parameters
+    # test2()

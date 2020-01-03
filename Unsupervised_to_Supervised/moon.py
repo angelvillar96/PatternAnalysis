@@ -8,6 +8,9 @@ import sklearn.datasets as datasets
 
 
 def visualize_labeled_moons():
+    """
+    Visualizing the samples in a scatter plot
+    """
     X, y = datasets.make_moons(10000)
     colordict = {0: 'red',
                 1: 'blue',
@@ -17,7 +20,10 @@ def visualize_labeled_moons():
     plt.show()
 
 
-def make_background( n_samples  ):
+def make_background(n_samples):
+    """
+    Generating random samples around 2 centers
+    """
     x1 = np.random.random_sample(n_samples )*3 - 1
     x2 = np.random.random_sample(n_samples )*1.5 - 0.5
     samples = np.zeros( (n_samples , 2) )
@@ -26,7 +32,10 @@ def make_background( n_samples  ):
     return samples
 
 
-def make_testpoints( n_samples ):
+def make_testpoints(n_samples):
+    """
+    Creating a meshgrid with a known number of samples
+    """
     x1test = np.linspace(-1, 2, n_samples*2)
     x2test = np.linspace(-0.5, 1, n_samples)
     x1test, x2test = np.meshgrid(x1test, x2test)
@@ -38,7 +47,6 @@ def make_testpoints( n_samples ):
 
 
 if __name__ == "__main__":
-
 
     n_samples  = [100, 1000, 10000]
     depths = [10, 15, 20]
@@ -55,7 +63,7 @@ if __name__ == "__main__":
                 params['max_depth'] = d
 
                 # setup training data
-                pdfsamples, _ = datasets.make_moons( n)
+                pdfsamples, _ = datasets.make_moons(n)
                 bgsamples = make_background(n)
                 X = np.concatenate((pdfsamples, bgsamples))
                 y = np.array([100]*pdfsamples.shape[0] + [0]*bgsamples.shape[0])
