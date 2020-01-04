@@ -8,10 +8,10 @@ import scipy.spatial.distance as distance
 ###############################################
 # helper functions
 ###############################################
-'''
-if arg is scalar: convert to vector of shape (1, dim)
-'''
 def scalar_to_vector(arg, dim):
+    """
+    if arg is scalar: convert to vector of shape (1, dim)
+    """
     if ( not (isinstance(arg, np.ndarray)) or arg.shape[0] != dim ):
         vector = np.array([arg]*dim)
     else:
@@ -19,10 +19,10 @@ def scalar_to_vector(arg, dim):
     return vector
 
 
-'''###################################################
-calculate the within cluster distance W
-###################################################'''
 def within_cluster_distance(samples, labels):
+    """
+    calculate the within cluster distance W
+    """
     W = 0
     for i in range(int(np.min(labels)), int(np.max(labels)+1)):
         clustersamples = samples[np.where(labels==i)]
@@ -34,12 +34,23 @@ def within_cluster_distance(samples, labels):
 
 
 
-'''###################################################
-class for data generation/sampling
-###################################################'''
+###################################################
+# class for data generation/sampling
+###################################################
 class DataCreation():
 
     def __init__(self, numCenters, sigma):
+        """
+        Object to create synthetic blobs of data
+
+        Args:
+        -----
+        numCenters: Integer
+            number of clusters to be created
+        sigma: Float or Array
+            variance of each of the clusters
+        """
+
         self.numCenters = numCenters
         # if sigma is given as a scalar, convert it to a vector
         self.sigma = scalar_to_vector(sigma, numCenters)
@@ -55,12 +66,19 @@ class DataCreation():
 
 
     def createCenters(self, numCenters):
+        """
+        Creating random centers for the clusters
+        """
+
         shape = (numCenters, 2)
         #return np.random.random_sample(shape)
         return 5*np.random.random_sample(shape) - 2.5
 
 
     def createSamples(self, numSamples):
+        """
+        Creating random samples around each of the cluster centers
+        """
 
         # if numSamples is given as a scalar, convert it to a vector:
         self.numSamples = scalar_to_vector(numSamples, self.numCenters)
@@ -74,10 +92,10 @@ class DataCreation():
         idx = 0
         for i, center in enumerate(self.centers):
 
-            #create samples for center i
+            # create samples for center i
             samples = (np.random.randn(self.numSamples[i], 2) )*self.sigma[i] + center
 
-            #add class labels
+            # add class labels
             labels = i*np.ones( self.numSamples[i], dtype=np.int )
 
             #collect samples in self.samples
@@ -94,6 +112,9 @@ class DataCreation():
 
 
     def createUniformSamples( self, numSamples, num_repetitions=10 ):
+        """
+        Creting uniformly random distributed samples to later compute the gap statistics
+        """
 
         self.num_repetitions = num_repetitions
         self.uniform_samples = []
@@ -114,9 +135,9 @@ class DataCreation():
 
 
 
-'''###############################################
-class for data visalization/plotting
-###############################################'''
+###############################################
+# class for data visalization/plotting
+###############################################
 class DataVisualization():
 
     #class variable
@@ -127,6 +148,10 @@ class DataVisualization():
 
 
     def createColorDict(self, numClassLabels):
+        """
+        Creating a color map for nice visualization fo the clusters
+        """
+
         self.colors = cm.get_cmap('viridis', numClassLabels).colors
         self.colorDict = {}
         for i in range(numClassLabels):
@@ -134,6 +159,10 @@ class DataVisualization():
 
 
     def plotLabels(self, samples, labels, title=""):
+        """
+        Displaying a figure coloring each of the clusters differently
+        """
+
         DataVisualization.figcounter += 1
         self.fig1 = plt.figure(DataVisualization.figcounter)
         plt.scatter( samples[:,0], samples[:,1],
@@ -142,8 +171,6 @@ class DataVisualization():
         plt.ylabel("x2")
         if(title!=""):
             plt.title(title)
-
-
 
 
 
