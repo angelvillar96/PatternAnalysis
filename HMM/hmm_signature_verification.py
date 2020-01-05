@@ -16,9 +16,10 @@ class Dataset():
     It also creates the training and test sets.
     """
 
-    ###############################################
-    # init method from the dataset class
     def __init__(self):
+        """
+        Initializer of the Dataset objects
+        """
 
         self.current_path = os.getcwd()
         self.data_path = self.current_path + "/data"
@@ -38,9 +39,10 @@ class Dataset():
         self.get_files()
 
 
-    ###############################################
-    # Method that obtains and clasifies original and imitation csv files from the file directory
     def get_files(self):
+        """
+        Method that obtains and clasifies original and imitation csv files from the file directory
+        """
 
         for path, dirs, files in os.walk(self.data_path):
             for dir in dirs:
@@ -55,9 +57,10 @@ class Dataset():
         return
 
 
-    ###############################################
-    # Method that creates equilibrated train and test sets
     def obtain_sets(self, user="user_0", size_training=30):
+        """
+        Creating equilibrated train and test sets
+        """
 
         original_files_permutated = np.random.permutation(self.original_files[user])
         self.training_files = original_files_permutated[:size_training]
@@ -67,9 +70,10 @@ class Dataset():
         return
 
 
-    #############################################
-    # Method that creates the feature vectors
     def create_feature_vector(self, files=[], name=""):
+        """
+        Computing new features and creating feature vectors from csv files
+        """
 
         if( len(files)==0 ):
             return
@@ -105,9 +109,10 @@ class Dataset():
         return set
 
 
-    #############################################
-    # Method that normalizes the feature vectors
     def normalization(self, set):
+        """
+        Normalizing feature vectors to zero mean and unit variance
+        """
 
         #epsilon = np.random.randn(np.array(set).shape[0],np.array(set).shape[1])
         #variance = np.var(set+epsilon, axis=0)
@@ -126,10 +131,10 @@ class Model():
 
     accuracies = []
 
-    ###############################################
-    # Method that initialized the HMM
     def __init__(self, n_components=5, user="user_0", model="gaussian"):
-
+        """
+        Initializer of the Hidden Markov Models
+        """
         self.user = user
         self.n_components = n_components
 
@@ -147,10 +152,10 @@ class Model():
         self.overall_accuracy = 0
 
 
-    ##############################################
-    # Method that computes the initial transition probabilities
     def compute_trans_matrix( self, n_components ):
-
+        """
+        Computing the initial transition probabilities
+        """
         matrix = np.zeros((n_components,n_components))
         matrix[-1,-1] = 1.
 
@@ -160,9 +165,10 @@ class Model():
         return matrix
 
 
-    ###############################################
-    # Method that trains the HMM on a given set
     def train(self, training_set):
+        """
+        Training the HMM on a given dataset
+        """
 
         lengths =  [ seq.shape[0] for seq in training_set ]
 
@@ -175,9 +181,10 @@ class Model():
         return
 
 
-    ###############################################
-    # Method that test the HMM on all signatures
     def test(self, training_set, original_test_set, imitation_test_set ):
+        """
+        Using the trained HMM to verify whether the signatures where real or fake
+        """
 
         plt.figure()
 
@@ -220,9 +227,10 @@ class Model():
         Model.accuracies.append(accuracy)
 
 
-    ###############################################
-    # Method that preprocesses a set to obtain the desired shape
     def preprocessing(self, set):
+        """
+        Preprocessing a dataset to obtain the desired shape and data type
+        """
 
         concatenated_set = []
         for signature in set:
@@ -233,9 +241,10 @@ class Model():
         return concatenated_set
 
 
-    #############################################
-    # Method that evaluates the performance of the model
     def evaluate(self, training_scores, original_test_scores, imitation_test_scores):
+        """
+        Evaluating the performance of the model
+        """
 
         #finding a threshold: third to smallest training score
         sorted_scores =  np.sort(training_scores)
@@ -250,9 +259,10 @@ class Model():
         return accuracy, threshold
 
 
-    #############################################
-    # Method that obtains the overall_accuracy
     def get_overall_accuracy(self):
+        """
+        Obatining the overall accuracy
+        """
 
         self.overall_accuracy = np.sum(Model.accuracies)/len(Model.accuracies)
 

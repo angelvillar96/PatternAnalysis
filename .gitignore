@@ -3,6 +3,3 @@
 .gitkeep
 .ipynb_checkpoints
 __pycache__
-
-# data folder is too heavy
-data/
